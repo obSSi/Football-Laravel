@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'TP Football' }}</title>
+    <title>{{ $title ?? 'Football Laravel' }}</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 <body>
     <header class="site-header">
-        <h1>TP Football</h1>
+        <h1>Football Laravel</h1>
         @auth
             <div class="user-meta">
                 Bonjour, <strong>{{ auth()->user()->username }}</strong>
@@ -25,7 +25,8 @@
             <a href="{{ route('dashboard') }}" @class(['active' => request()->routeIs('dashboard')])>Accueil</a>
             <a href="{{ route('championnats.index') }}" @class(['active' => request()->routeIs('championnats.*')])>Championnats</a>
             <a href="{{ route('equipes.index') }}" @class(['active' => request()->routeIs('equipes.*')])>Équipes</a>
-            <a href="{{ route('matchs.classement') }}" @class(['active' => request()->routeIs('matchs.*')])>Classement</a>
+            <a href="{{ route('matchs.index') }}" @class(['active' => request()->routeIs('matchs.index')])>Matchs</a>
+            <a href="{{ route('matchs.classement') }}" @class(['active' => request()->routeIs('matchs.classement')])>Classement</a>
         </nav>
     @endauth
 
@@ -56,3 +57,4 @@
     </main>
 </body>
 </html>
+

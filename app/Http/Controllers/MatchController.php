@@ -12,6 +12,37 @@ use Illuminate\View\View;
 
 class MatchController extends Controller
 {
+    public function index(Request $request): View
+    {
+        $championnats = Championnat::withCount('equipes')
+            ->orderBy('nom')
+            ->get();
+
+        $selectedChampionnatId = (int) $request->input('championnat_id', $championnats->first()?->id);
+
+        $matchs = collect();
+        $selectedChampionnat = null;
+
+        if ($selectedChampionnatId) {
+            $selectedChampionnat = $championnats->firstWhere('id', $selectedChampionnatId)
+                ?? Championnat::with('equipes')->find($selectedChampionnatId);
+
+            if ($selectedChampionnat) {
+                $matchs = Fixture::with(['equipe1', 'equipe2'])
+                    ->where('championnat_id', $selectedChampionnatId)
+                    ->orderBy('id')
+                    ->get();
+            }
+        }
+
+        return view('matchs.index', [
+            'championnats' => $championnats,
+            'selectedChampionnatId' => $selectedChampionnatId,
+            'matchs' => $matchs,
+            'selectedChampionnat' => $selectedChampionnat,
+        ]);
+    }
+
     public function classement(Request $request): View
     {
         $championnats = Championnat::withCount('equipes')
@@ -21,7 +52,6 @@ class MatchController extends Controller
         $selectedChampionnatId = (int) $request->input('championnat_id', $championnats->first()?->id);
 
         $classement = collect();
-        $matchs = collect();
         $selectedChampionnat = null;
 
         if ($selectedChampionnatId) {
@@ -30,10 +60,6 @@ class MatchController extends Controller
 
             if ($selectedChampionnat) {
                 $classement = $this->buildClassement($selectedChampionnatId);
-                $matchs = Fixture::with(['equipe1', 'equipe2'])
-                    ->where('championnat_id', $selectedChampionnatId)
-                    ->orderBy('id')
-                    ->get();
             }
         }
 
@@ -41,7 +67,6 @@ class MatchController extends Controller
             'championnats' => $championnats,
             'selectedChampionnatId' => $selectedChampionnatId,
             'classement' => $classement,
-            'matchs' => $matchs,
             'selectedChampionnat' => $selectedChampionnat,
         ]);
     }
@@ -62,7 +87,7 @@ class MatchController extends Controller
 
         if (count($teams) < 2) {
             return redirect()
-                ->route('matchs.classement', ['championnat_id' => $championnatId])
+                ->route('matchs.index', ['championnat_id' => $championnatId])
                 ->with('error', 'Ajoutez au moins deux équipes avant de générer des matchs.');
         }
 
@@ -77,7 +102,7 @@ class MatchController extends Controller
         }
 
         return redirect()
-            ->route('matchs.classement', ['championnat_id' => $championnatId])
+            ->route('matchs.index', ['championnat_id' => $championnatId])
             ->with('status', 'Matchs générés avec succès.');
     }
 
@@ -93,7 +118,7 @@ class MatchController extends Controller
 
         if ($matchs->isEmpty()) {
             return redirect()
-                ->route('matchs.classement', ['championnat_id' => $championnatId])
+                ->route('matchs.index', ['championnat_id' => $championnatId])
                 ->with('error', 'Générez les matchs avant de lancer la simulation.');
         }
 
@@ -105,7 +130,7 @@ class MatchController extends Controller
         }
 
         return redirect()
-            ->route('matchs.classement', ['championnat_id' => $championnatId])
+            ->route('matchs.index', ['championnat_id' => $championnatId])
             ->with('status', 'Simulation terminée.');
     }
 
@@ -122,7 +147,7 @@ class MatchController extends Controller
         ]);
 
         return redirect()
-            ->route('matchs.classement', ['championnat_id' => $fixture->championnat_id])
+            ->route('matchs.index', ['championnat_id' => $fixture->championnat_id])
             ->with('status', 'Score mis à jour.');
     }
 
@@ -146,7 +171,7 @@ class MatchController extends Controller
         }
 
         return redirect()
-            ->route('matchs.classement', ['championnat_id' => $championnatId])
+            ->route('matchs.index', ['championnat_id' => $championnatId])
             ->with('status', 'Classement réinitialisé.');
     }
 
@@ -224,3 +249,4 @@ class MatchController extends Controller
         return collect($classement);
     }
 }
+

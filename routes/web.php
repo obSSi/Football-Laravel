@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
         ->name('equipes.destroy')
         ->middleware('admin');
 
+    Route::get('/matchs', [MatchController::class, 'index'])->name('matchs.index');
     Route::get('/classement', [MatchController::class, 'classement'])->name('matchs.classement');
     Route::post('/matchs/generer', [MatchController::class, 'generer'])
         ->name('matchs.generer')
