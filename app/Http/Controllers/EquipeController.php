@@ -10,6 +10,9 @@ use Illuminate\View\View;
 
 class EquipeController extends Controller
 {
+    /**
+     * Display all teams with their championship.
+     */
     public function index(): View
     {
         $equipes = Equipe::with('championnat')
@@ -21,6 +24,9 @@ class EquipeController extends Controller
         return view('equipes.index', compact('equipes', 'championnats'));
     }
 
+    /**
+     * Create a new team.
+     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -35,6 +41,9 @@ class EquipeController extends Controller
             ->with('status', 'Équipe ajoutée avec succès.');
     }
 
+    /**
+     * Update an existing team.
+     */
     public function update(Request $request, Equipe $equipe): RedirectResponse
     {
         $validated = $request->validate([
@@ -49,6 +58,9 @@ class EquipeController extends Controller
             ->with('status', 'Équipe mise à jour.');
     }
 
+    /**
+     * Delete a team.
+     */
     public function destroy(Equipe $equipe): RedirectResponse
     {
         $equipe->delete();

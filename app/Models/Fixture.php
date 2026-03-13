@@ -19,21 +19,33 @@ class Fixture extends Model
         'score2',
     ];
 
+    /**
+     * Championship this fixture belongs to.
+     */
     public function championnat()
     {
         return $this->belongsTo(Championnat::class);
     }
 
+    /**
+     * Home team relation.
+     */
     public function equipe1()
     {
         return $this->belongsTo(Equipe::class, 'equipe1_id');
     }
 
+    /**
+     * Away team relation.
+     */
     public function equipe2()
     {
         return $this->belongsTo(Equipe::class, 'equipe2_id');
     }
 
+    /**
+     * Determine if fixture has both scores.
+     */
     public function isPlayed(): bool
     {
         return !is_null($this->score1) && !is_null($this->score2);

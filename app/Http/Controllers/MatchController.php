@@ -12,6 +12,9 @@ use Illuminate\View\View;
 
 class MatchController extends Controller
 {
+    /**
+     * Display scheduled matches for a selected championship.
+     */
     public function index(Request $request): View
     {
         $championnats = Championnat::withCount('equipes')
@@ -43,6 +46,9 @@ class MatchController extends Controller
         ]);
     }
 
+    /**
+     * Display the standings for a selected championship.
+     */
     public function classement(Request $request): View
     {
         $championnats = Championnat::withCount('equipes')
@@ -71,6 +77,9 @@ class MatchController extends Controller
         ]);
     }
 
+    /**
+     * Generate one-leg fixtures for all teams in a championship.
+     */
     public function generer(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -106,6 +115,9 @@ class MatchController extends Controller
             ->with('status', 'Matchs générés avec succès.');
     }
 
+    /**
+     * Simulate random scores for all fixtures of a championship.
+     */
     public function simuler(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -134,6 +146,9 @@ class MatchController extends Controller
             ->with('status', 'Simulation terminée.');
     }
 
+    /**
+     * Update the score of a given fixture.
+     */
     public function updateScore(Request $request, Fixture $fixture): RedirectResponse
     {
         $validated = $request->validate([
@@ -151,6 +166,9 @@ class MatchController extends Controller
             ->with('status', 'Score mis à jour.');
     }
 
+    /**
+     * Reset fixtures or only scores depending on selected mode.
+     */
     public function reset(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -175,6 +193,9 @@ class MatchController extends Controller
             ->with('status', 'Classement réinitialisé.');
     }
 
+    /**
+     * Build standings data from played fixtures of a championship.
+     */
     private function buildClassement(int $championnatId): Collection
     {
         $teams = Equipe::where('championnat_id', $championnatId)

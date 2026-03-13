@@ -7,11 +7,17 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    /**
+     * Display the login form.
+     */
     public function showLoginForm()
     {
         return view('auth.login');
     }
 
+    /**
+     * Authenticate a user and start a session.
+     */
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -32,6 +38,9 @@ class AuthController extends Controller
             ->onlyInput('username');
     }
 
+    /**
+     * Logout user and invalidate current session.
+     */
     public function logout(Request $request)
     {
         Auth::logout();

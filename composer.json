@@ -48,6 +48,9 @@
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
+        "docs": [
+            "@php scripts/generate-docs.php"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

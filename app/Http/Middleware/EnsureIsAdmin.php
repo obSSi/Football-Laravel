@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureIsAdmin
 {
     /**
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * Ensure only administrators can continue on protected routes.
      */
     public function handle(Request $request, Closure $next): Response
     {
