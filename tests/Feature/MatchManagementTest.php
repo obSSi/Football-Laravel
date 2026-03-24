@@ -108,6 +108,9 @@ class MatchManagementTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin)->patch(route('matchs.score', $fixture), [
+            'match_id' => $fixture->id,
+            'maison_id' => $team1->id,
+            'exterieur_id' => $team2->id,
             'score1' => 4,
             'score2' => 2,
         ]);
@@ -115,9 +118,107 @@ class MatchManagementTest extends TestCase
         $response->assertRedirect(route('matchs.index', ['championnat_id' => $championnat->id]));
         $this->assertDatabaseHas('matchs', [
             'id' => $fixture->id,
+            'equipe1_id' => $team1->id,
+            'equipe2_id' => $team2->id,
             'score1' => 4,
             'score2' => 2,
         ]);
+    }
+
+    public function test_admin_can_swap_home_and_away_when_updating_score(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $championnat = Championnat::factory()->create();
+        [$team1, $team2] = Equipe::factory()->count(2)->create([
+            'championnat_id' => $championnat->id,
+        ]);
+
+        $fixture = Fixture::create([
+            'championnat_id' => $championnat->id,
+            'equipe1_id' => $team1->id,
+            'equipe2_id' => $team2->id,
+            'score1' => null,
+            'score2' => null,
+        ]);
+
+        $response = $this->actingAs($admin)->patch(route('matchs.score', $fixture), [
+            'match_id' => $fixture->id,
+            'maison_id' => $team2->id,
+            'exterieur_id' => $team1->id,
+            'score1' => 1,
+            'score2' => 0,
+        ]);
+
+        $response->assertRedirect(route('matchs.index', ['championnat_id' => $championnat->id]));
+        $this->assertDatabaseHas('matchs', [
+            'id' => $fixture->id,
+            'equipe1_id' => $team2->id,
+            'equipe2_id' => $team1->id,
+            'score1' => 1,
+            'score2' => 0,
+        ]);
+    }
+
+    public function test_admin_cannot_set_score_above_fifty(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $championnat = Championnat::factory()->create();
+        [$team1, $team2] = Equipe::factory()->count(2)->create([
+            'championnat_id' => $championnat->id,
+        ]);
+
+        $fixture = Fixture::create([
+            'championnat_id' => $championnat->id,
+            'equipe1_id' => $team1->id,
+            'equipe2_id' => $team2->id,
+            'score1' => null,
+            'score2' => null,
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->from(route('matchs.index', ['championnat_id' => $championnat->id]))
+            ->patch(route('matchs.score', $fixture), [
+                'match_id' => $fixture->id,
+                'maison_id' => $team1->id,
+                'exterieur_id' => $team2->id,
+                'score1' => 51,
+                'score2' => 2,
+            ]);
+
+        $response->assertRedirect(route('matchs.index', ['championnat_id' => $championnat->id]));
+        $response->assertSessionHasErrors('score1');
+        $this->assertDatabaseHas('matchs', [
+            'id' => $fixture->id,
+            'score1' => null,
+            'score2' => null,
+        ]);
+    }
+
+    public function test_visitor_cannot_update_a_match_score(): void
+    {
+        $visitor = User::factory()->create(['role' => 'visiteur']);
+        $championnat = Championnat::factory()->create();
+        [$team1, $team2] = Equipe::factory()->count(2)->create([
+            'championnat_id' => $championnat->id,
+        ]);
+
+        $fixture = Fixture::create([
+            'championnat_id' => $championnat->id,
+            'equipe1_id' => $team1->id,
+            'equipe2_id' => $team2->id,
+            'score1' => null,
+            'score2' => null,
+        ]);
+
+        $response = $this->actingAs($visitor)->patch(route('matchs.score', $fixture), [
+            'match_id' => $fixture->id,
+            'maison_id' => $team1->id,
+            'exterieur_id' => $team2->id,
+            'score1' => 1,
+            'score2' => 0,
+        ]);
+
+        $response->assertForbidden();
     }
 
     public function test_visitor_on_match_page_cannot_see_scores(): void
@@ -147,7 +248,10 @@ class MatchManagementTest extends TestCase
         ]));
 
         $response->assertOk();
-        $response->assertSee('Arsenal vs Chelsea');
+        $response->assertSee('Arsenal');
+        $response->assertSee('Chelsea');
+        $response->assertSee('Maison');
+        $response->assertSee('Exterieur');
         $response->assertDontSee('Score');
         $response->assertDontSee('2 - 1');
         $response->assertDontSee('Saisie');
@@ -250,4 +354,3 @@ class MatchManagementTest extends TestCase
         });
     }
 }
-

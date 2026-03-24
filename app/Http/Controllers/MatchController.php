@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateFixtureRequest;
 use App\Models\Championnat;
 use App\Models\Equipe;
 use App\Models\Fixture;
@@ -149,21 +150,20 @@ class MatchController extends Controller
     /**
      * Update the score of a given fixture.
      */
-    public function updateScore(Request $request, Fixture $fixture): RedirectResponse
+    public function updateScore(UpdateFixtureRequest $request, Fixture $fixture): RedirectResponse
     {
-        $validated = $request->validate([
-            'score1' => ['required', 'integer', 'min:0', 'max:999'],
-            'score2' => ['required', 'integer', 'min:0', 'max:999'],
-        ]);
+        $validated = $request->validated();
 
         $fixture->update([
+            'equipe1_id' => (int) $validated['maison_id'],
+            'equipe2_id' => (int) $validated['exterieur_id'],
             'score1' => $validated['score1'],
             'score2' => $validated['score2'],
         ]);
 
         return redirect()
             ->route('matchs.index', ['championnat_id' => $fixture->championnat_id])
-            ->with('status', 'Score mis à jour.');
+            ->with('status', 'Score et roles maison/exterieur mis a jour.');
     }
 
     /**
@@ -270,4 +270,5 @@ class MatchController extends Controller
         return collect($classement);
     }
 }
+
 

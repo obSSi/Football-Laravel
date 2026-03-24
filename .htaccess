@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Canonical URL: remove "/public" if user enters it manually.
+    RewriteRule ^public(?:/(.*))?$ /tpfootball-laravel/$1 [R=301,L,NC]
+
+    # Serve static assets from /public while keeping clean URLs.
+    RewriteRule ^(css|js|images|build)/(.*)$ public/$1/$2 [L,NC]
+    RewriteRule ^(favicon\.ico|robots\.txt)$ public/$1 [L,NC]
+
+    # Send all other requests to root front controller.
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
