@@ -34,6 +34,15 @@ Par defaut, le projet peut fonctionner avec SQLite (`database/database.sqlite`).
 php artisan test
 ```
 
+### Securite (fail2ban + anti-DoS)
+- Blocage temporaire de connexion apres plusieurs erreurs (base sur `username + IP`).
+- Limitation globale du nombre de requetes par minute pour reduire les attaques DoS applicatives.
+
+Variables configurables dans `.env`:
+- `SECURITY_LOGIN_MAX_ATTEMPTS=5`
+- `SECURITY_LOGIN_LOCKOUT_SECONDS=300`
+- `SECURITY_DOS_MAX_REQUESTS_PER_MINUTE=240`
+
 ### Documentation technique (PHPDoc + Doxygen)
 ```bash
 composer docs

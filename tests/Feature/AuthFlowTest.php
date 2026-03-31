@@ -50,6 +50,46 @@ class AuthFlowTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_login_is_temporarily_blocked_after_too_many_failed_attempts(): void
+    {
+        config()->set('security.login.max_attempts', 3);
+        config()->set('security.login.lockout_seconds', 120);
+
+        User::factory()->create([
+            'username' => 'locked_user',
+            'password' => bcrypt('good-pass'),
+        ]);
+
+        for ($i = 0; $i < 3; $i++) {
+            $response = $this->from(route('login'))->post(route('login.attempt'), [
+                'username' => 'locked_user',
+                'password' => 'wrong-pass',
+            ]);
+
+            $response->assertRedirect(route('login'));
+            $response->assertSessionHasErrors(['username']);
+        }
+
+        $blockedResponse = $this->from(route('login'))->post(route('login.attempt'), [
+            'username' => 'locked_user',
+            'password' => 'good-pass',
+        ]);
+
+        $blockedResponse->assertRedirect(route('login'));
+        $blockedResponse->assertSessionHasErrors(['username']);
+        $this->assertGuest();
+
+        $this->travel(121)->seconds();
+
+        $successResponse = $this->post(route('login.attempt'), [
+            'username' => 'locked_user',
+            'password' => 'good-pass',
+        ]);
+
+        $successResponse->assertRedirect(route('dashboard'));
+        $this->assertAuthenticated();
+    }
+
     public function test_authenticated_user_can_logout(): void
     {
         $user = User::factory()->create();
@@ -60,4 +100,3 @@ class AuthFlowTest extends TestCase
         $this->assertGuest();
     }
 }
-

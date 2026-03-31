@@ -15,11 +15,6 @@
                 <input type="password" name="password" required>
             </label>
 
-            <label class="checkbox">
-                <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
-                Se souvenir de moi
-            </label>
-
             <button type="submit">Se connecter</button>
         </form>
     </section>
