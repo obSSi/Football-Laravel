@@ -1,0 +1,40 @@
+@startuml
+autonumber
+skinparam ParticipantPadding 20
+skinparam BoxPadding 10
+skinparam SequenceMessageAlign center
+
+actor Admin
+participant "Laravel Router" as Router
+participant "auth middleware" as AuthMW
+participant "admin middleware\nEnsureIsAdmin" as AdminMW
+participant "UpdateFixtureRequest" as UFR
+participant "MatchController" as MC
+participant "Fixture (Eloquent)" as FixtureModel
+database "MySQL" as DB
+
+Admin -> Router: PATCH /matchs/{fixture}/score\n(match_id, maison_id, exterieur_id, score1, score2)
+Router -> AuthMW: verifier session
+AuthMW --> Router: utilisateur authentifie
+Router -> AdminMW: verifier role admin
+
+alt role != admin
+  AdminMW --> Admin: HTTP 403
+else role admin
+  AdminMW --> Router: OK
+  Router -> UFR: autorize + validate
+  UFR -> UFR: rules()
+  UFR -> DB: verifier equipes exists + different
+  UFR -> DB: verifier fixture cible et unicite\n(match championnat/equipe1/equipe2)
+  DB --> UFR: validation OK
+  UFR --> Router: donnees validees
+
+  Router -> MC: updateScore(request, fixture)
+  MC -> FixtureModel: update(equipe1_id, equipe2_id,\nscore1, score2)
+  FixtureModel -> DB: UPDATE matchs SET ...
+  DB --> FixtureModel: success
+  FixtureModel --> MC: fixture mis a jour
+  MC --> Admin: redirect 302 /matchs?championnat_id=...
+end
+
+@enduml

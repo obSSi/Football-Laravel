@@ -1,0 +1,91 @@
+@startuml
+hide methods
+hide stereotypes
+skinparam linetype ortho
+
+entity "users" as users {
+  *id : bigint <<PK>>
+  --
+  name : string?
+  username : string <<UQ>>
+  email : string? <<UQ>>
+  role : enum(admin, visiteur)
+  password : string
+  remember_token : string?
+  email_verified_at : timestamp?
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "championnats" as championnats {
+  *id : bigint <<PK>>
+  --
+  nom : string
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "equipes" as equipes {
+  *id : bigint <<PK>>
+  --
+  nom : string
+  championnat_id : bigint <<FK>>
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "matchs" as matchs {
+  *id : bigint <<PK>>
+  --
+  championnat_id : bigint <<FK>>
+  equipe1_id : bigint <<FK>>
+  equipe2_id : bigint <<FK>>
+  score1 : tinyint?
+  score2 : tinyint?
+  created_at : timestamp
+  updated_at : timestamp
+  --
+  UNIQUE(championnat_id, equipe1_id, equipe2_id)
+}
+
+entity "classement" as classement {
+  *id : bigint <<PK>>
+  --
+  equipe_id : bigint <<FK>>
+  championnat_id : bigint <<FK>>
+  points : int
+  victoires : int
+  defaites : int
+  nuls : int
+  buts_marques : int
+  buts_encaisses : int
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "sessions" as sessions {
+  *id : string <<PK>>
+  --
+  user_id : bigint?
+  ip_address : string?
+  user_agent : text?
+  payload : longtext
+  last_activity : int
+}
+
+entity "password_reset_tokens" as prt {
+  *email : string <<PK>>
+  --
+  token : string
+  created_at : timestamp?
+}
+
+championnats ||--o{ equipes : championnat_id
+championnats ||--o{ matchs : championnat_id
+equipes ||--o{ matchs : equipe1_id
+equipes ||--o{ matchs : equipe2_id
+championnats ||--o{ classement : championnat_id
+equipes ||--o{ classement : equipe_id
+users ||--o{ sessions : user_id
+
+@enduml

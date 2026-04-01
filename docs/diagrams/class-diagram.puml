@@ -1,0 +1,124 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+hide empty members
+
+package "App\\Models" {
+  class User {
+    +id: bigint
+    +name: string?
+    +username: string
+    +email: string?
+    +role: enum(admin, visiteur)
+    +isAdmin(): bool
+  }
+
+  class Championnat {
+    +id: bigint
+    +nom: string
+    +equipes()
+    +matchs()
+  }
+
+  class Equipe {
+    +id: bigint
+    +nom: string
+    +championnat_id: bigint
+    +championnat()
+    +homeMatchs()
+    +awayMatchs()
+  }
+
+  class FootballMatch {
+    +id: bigint
+    +championnat_id: bigint
+    +equipe1_id: bigint
+    +equipe2_id: bigint
+    +score1: tinyint?
+    +score2: tinyint?
+    +championnat()
+    +maison()
+    +exterieur()
+    +equipe1()
+    +equipe2()
+    +score(): Attribute
+  }
+
+  class Fixture {
+    +isPlayed(): bool
+  }
+}
+
+package "App\\Http\\Controllers" {
+  class AuthController {
+    +showLoginForm()
+    +login(Request)
+    +logout(Request)
+  }
+
+  class DashboardController {
+    +__invoke(Request)
+  }
+
+  class ChampionnatController {
+    +index()
+    +store(Request)
+    +update(Request, Championnat)
+    +destroy(Championnat)
+  }
+
+  class EquipeController {
+    +index()
+    +store(Request)
+    +update(Request, Equipe)
+    +destroy(Equipe)
+  }
+
+  class MatchController {
+    +index(Request)
+    +classement(Request)
+    +generer(Request)
+    +simuler(Request)
+    +updateScore(UpdateFixtureRequest, Fixture)
+    +reset(Request)
+    -buildClassement(int): Collection
+  }
+}
+
+package "App\\Http\\Requests" {
+  class UpdateFixtureRequest {
+    +authorize(): bool
+    +rules(): array
+    +withValidator(Validator): void
+    +messages(): array
+  }
+}
+
+package "App\\Http\\Middleware" {
+  class EnsureIsAdmin {
+    +handle(Request, Closure): Response
+  }
+}
+
+Fixture --|> FootballMatch
+
+Championnat "1" o-- "0..*" Equipe : hasMany
+Championnat "1" o-- "0..*" Fixture : hasMany
+Equipe "1" --> "1" Championnat : belongsTo
+Fixture "0..*" --> "1" Championnat : belongsTo
+Fixture "0..*" --> "1" Equipe : equipe1_id (maison)
+Fixture "0..*" --> "1" Equipe : equipe2_id (exterieur)
+
+MatchController ..> Fixture
+MatchController ..> Equipe
+MatchController ..> Championnat
+MatchController ..> UpdateFixtureRequest
+ChampionnatController ..> Championnat
+EquipeController ..> Equipe
+EquipeController ..> Championnat
+AuthController ..> User
+EnsureIsAdmin ..> User
+UpdateFixtureRequest ..> Fixture
+UpdateFixtureRequest ..> Equipe
+
+@enduml
